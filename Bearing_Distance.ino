@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "RotaryEncoder.h"
 #include "grid.h"
 #include <GyverOLED.h>
