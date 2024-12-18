@@ -7,9 +7,7 @@ RotaryEncoder leftDial(4, 2, 3);
 RotaryEncoder rightDial(5, 7, 6);
 
 void oledScrollPrint(String text, uint8_t highlight, bool newLine){
-  if(highlight == 1){
-    oled.invertText(true); 
-  }
+  oled.invertText(highlight == 1); 
   oled.print(text);
   oled.invertText(false); 
   if(newLine){
@@ -62,9 +60,14 @@ String calculateBearing(grid& gridA, grid& gridB) {
     return leadingZeros + String(bearingMils) + " mils";
 }
 
-int distanceBearingScreen(){
-  uint8_t lastScroll = 1;
-  uint8_t currentScroll = 1;
+const uint8_t MAX_SCROLL = 4;
+const uint8_t MIN_SCROLL = 1;
+const uint8_t MAX_POSITION = 99;
+const uint8_t MIN_POSITION = 0;
+
+void distanceBearingScreen(){
+  uint8_t lastScroll = MIN_SCROLL;
+  uint8_t currentScroll = MIN_SCROLL;
 
   static grid gridA(00, 00, 00, 00);
   static grid gridB(00, 00, 00, 00);
@@ -76,8 +79,8 @@ int distanceBearingScreen(){
   String bearing = "!";
   while(currentScroll > 0){
 
-    leftDial.boundPosition(0,99);
-    rightDial.boundPosition(0,99);
+    leftDial.boundPosition(MIN_POSITION, MAX_POSITION);
+    rightDial.boundPosition(MIN_POSITION, MAX_POSITION);
 
     oled.clear();
     oled.setCursor(0, 0);
@@ -124,8 +127,8 @@ int distanceBearingScreen(){
     if(leftDial.buttonHeld() && rightDial.buttonHeld()){
       gridA.reset();
       gridB.reset();
-      leftDial.setPosition(0);
-      rightDial.setPosition(0);
+      leftDial.setPosition(MIN_POSITION);
+      rightDial.setPosition(MIN_POSITION);
     }
     
     lastScroll = currentScroll;
@@ -136,8 +139,8 @@ int distanceBearingScreen(){
       currentScroll--;
     }
 
-    if(currentScroll > 4){
-      currentScroll = 4;
+    if(currentScroll > MAX_SCROLL){
+      currentScroll = MAX_SCROLL;
     }
 
     if(lastScroll != currentScroll){
@@ -168,9 +171,6 @@ int distanceBearingScreen(){
 void setup() {
   Serial.begin(9600);
   oled.init();
-  oled.clear();
-  oled.update();
-  Serial.println("**************");
   // Enable pin-change interrupt for PCINT2 group
   PCICR |= (1 << PCIE2); // Enable PCINT2 (PCINT[23:16])
 
